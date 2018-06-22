@@ -10,26 +10,19 @@
             <span class="sortby">Sort by:</span>
             <a href="javascript:void(0)" class="default cur">Default</a>
             <a href="javascript:void(0)" class="price">Price <svg class="icon icon-arrow-short"><use xlink:href="#icon-arrow-short"></use></svg></a>
-            <a href="javascript:void(0)" class="filterby stopPop">Filter by</a>
+            <a href="javascript:void(0)" class="filterby stopPop" v-on:click="setFilterPrice">Filter by</a>
           </div>
           <div class="accessory-result">
             <!-- filter -->
-            <div class="filter stopPop" id="filter">
+            <div class="filter stopPop" id="filter" v-bind:class="{'filterby-show':filterBy}">
               <dl class="filter-price">
                 <dt>Price:</dt>
-                <dd><a href="javascript:void(0)">All</a></dd>
-                <dd>
-                  <a href="javascript:void(0)">0 - 100</a>
+                <dd><a href="javascript:;" @click="setFilterChecked('All')" :class="{'cur':priceChecked=='All'}">All</a></dd>
+
+                <dd v-for="(price,index) in priceFilter" @click="setFilterChecked(index)">
+                  <a href="javascript:;" :class="{cur:priceChecked==index}">{{price.startPrice}} - {{price.endPrice}}</a>
                 </dd>
-                <dd>
-                  <a href="javascript:void(0)">100 - 500</a>
-                </dd>
-                <dd>
-                  <a href="javascript:void(0)">500 - 1000</a>
-                </dd>
-                <dd>
-                  <a href="javascript:void(0)">1000 - 2000</a>
-                </dd>
+
               </dl>
             </div>
 
@@ -40,7 +33,7 @@
 
                   <li v-for="(item,index) in data">
                     <div class="pic">
-                      <a href="#"><img :src="'/static/img/'+item.img+'.jpg'" alt=""></a>
+                      <a href="#"><img v-lazy="'/static/img/'+item.img" alt=""></a>
                     </div>
                     <div class="main">
                       <div class="name">{{item.name}}</div>
@@ -57,6 +50,7 @@
           </div>
         </div>
       </div>
+      <div class="md-overlay" v-show="overLayFlag" @click.stop="closePop"></div>
       <nav-footer></nav-footer>
     </div>
 </template>
@@ -78,13 +72,38 @@
         data(){
           return {
             msg:"hello dxh",
-            data:[]
+            data:[],
+            priceFilter:[
+              {startPrice:0,endPrice:500.00},
+              {startPrice:500.00,endPrice:1000.00},
+              {startPrice:1000.00,endPrice:1500.00},
+              {startPrice:1500.00,endPrice:2000.00},
+              {startPrice:2000.00,endPrice:3000.00},
+            ],
+            priceChecked:"All",   /*默认All选中*/
+            overLayFlag:false,    /*遮罩默认不显示*/
+            filterBy:false
           }
         }
         ,components:{
             NavHeader:NavHeader,
             NavFooter,
             NavBread
+        }
+        ,methods:{
+            setFilterPrice(){
+                this.filterBy = true;
+                this.overLayFlag = true;
+            },
+            setFilterChecked(index){
+                this.priceChecked=index;
+                this.closePop();
+            }
+            ,
+            closePop(){
+                this.filterBy = false;
+                this.overLayFlag = false;
+            }
         }
         ,mounted(){
             /*axios.get("").then((res)=>{
@@ -97,19 +116,19 @@
                 "id":"1",
                 "name":"音响",
                 "price":199,
-                "img":"6"
+                "img":"6.jpg"
               },
               {
                 "id":"2",
                 "name":"小米8",
                 "price":2999,
-                "img":"8"
+                "img":"8.jpg"
               },
               {
                 "id":"3",
                 "name":"小米5s小米5s",
                 "price":1099,
-                "img":"4"
+                "img":"4.jpg"
               }
             ];
          }
