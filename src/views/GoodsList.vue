@@ -19,7 +19,7 @@
                 <dt>Price:</dt>
                 <dd><a href="javascript:;" @click="setFilterChecked('All')" :class="{'cur':priceChecked=='All'}">All</a></dd>
 
-                <dd v-for="(price,index) in priceFilter" @click="setFilterChecked(index)">
+                <dd v-for="(price,index) in priceFilter" @click="setFilterChecked(index)" v-bind:sprice="price.startPrice" v-bind:eprice="price.endPrice" ref="_priceFliter_">
                   <a href="javascript:;" :class="{cur:priceChecked==index}">{{price.startPrice}} - {{price.endPrice}}</a>
                 </dd>
 
@@ -46,7 +46,7 @@
 
                 </ul>
                 <div class="load-more" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="5">
-                  加载中...
+                    <img src="./../../static/loading-svg/loading-spinning-bubbles.svg" v-show="loading"/>
                 </div>
               </div>
             </div>
@@ -96,7 +96,11 @@
             page:1,
             pageSize:4,
             sortFlat:true,
-            busy:true    /*是否禁用滚动加载 true禁用，false启用*/
+            busy:true,    /*是否禁用滚动加载 true禁用，false启用*/
+            sprice:0,
+            eprice:1000,
+            loading:false
+
           }
         }
         ,components:{
@@ -121,24 +125,36 @@
                 this.overLayFlag = true;
             },
             setFilterChecked(index){
+                this.page = 1;
                 this.priceChecked=index;
                 this.closePop();
+                if(index!="All"){
+                  let pObj_ = this.$refs._priceFliter_[index];
+                  this.sprice = pObj_.getAttribute("sprice");
+                  this.eprice = pObj_.getAttribute("eprice");
+                }
+                this.goodsList();
             },
             closePop(){
                 this.filterBy = false;
                 this.overLayFlag = false;
             }
             ,goodsList(flag){   /*flag是否累加*/
+                this.loading = true;
                 let param = {
                     page:this.page,
                     pageSize:this.pageSize,
-                    sort:this.sortFlat?1:-1
+                    sort:this.sortFlat?1:-1,
+                    priceChecked:this.priceChecked,
+                    sprice:this.sprice,
+                    eprice:this.eprice
                 };
                 axios.get("/goods",{
                   params:param
                 }).then((res)=>{
                   let data = res.data;
                   if(data.status=="0"){
+                      this.loading = false;
                       if(flag){
                           this.data = this.data.concat(data.result.list);
                           if(data.result.count==0 || data.result.count<this.pageSize){
@@ -155,6 +171,7 @@
                   }
                 }).catch((err)=>{
                   alert("服务端加载失败");
+                  this.loading = false;
                 })
             }
         }

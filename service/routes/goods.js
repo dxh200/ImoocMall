@@ -21,6 +21,10 @@ router.get("/",(req,res,next)=>{
   let sort = req.query.sort;
   let page = parseInt(req.query.page);
   let pageSize = parseInt(req.query.pageSize);
+  let priceCheked = req.query.priceChecked;
+  let priceGe = parseInt(req.query.sprice);
+  let priceLe = parseInt(req.query.eprice);
+
   //是不数字
   if(Number.isNaN(page)){
     page = 1;
@@ -30,10 +34,19 @@ router.get("/",(req,res,next)=>{
     pageSize = 8;
   }
   let params = {};
+
+  if(priceCheked!="All"){
+    params = {
+      price:{
+        $gte:priceGe,
+        $lte:priceLe
+      }
+    }
+  }
   let priceSort = {"price":sort};
   let skip = (page-1)*pageSize;
 
-  let goodsModel = goods.find({});
+  let goodsModel = goods.find(params);
   goodsModel.sort(priceSort);
   goodsModel.skip(skip).limit(pageSize).exec((err,data)=>{
     if(err){
