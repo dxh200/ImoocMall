@@ -8,9 +8,9 @@
         <div class="container">
           <div class="filter-nav">
             <span class="sortby">Sort by:</span>
-            <a href="javascript:void(0)" class="default cur">Default</a>
-            <a href="javascript:void(0)" class="price">Price <svg class="icon icon-arrow-short"><use xlink:href="#icon-arrow-short"></use></svg></a>
-            <a href="javascript:void(0)" class="filterby stopPop" v-on:click="setFilterPrice">Filter by</a>
+            <a href="javascript:;" class="default cur">Default</a>
+            <a href="javascript:;" class="price" @click="setSortFlat">Price <svg class="icon icon-arrow-short"><use xlink:href="#icon-arrow-short"></use></svg></a>
+            <a href="javascript:;" class="filterby stopPop" v-on:click="setFilterPrice">Filter by</a>
           </div>
           <div class="accessory-result">
             <!-- filter -->
@@ -45,6 +45,9 @@
                   </li>
 
                 </ul>
+                <div class="load-more" v-infinite-scroll="loadMore" infinite-scroll-disabled="busy" infinite-scroll-distance="5">
+                  加载中...
+                </div>
               </div>
             </div>
           </div>
@@ -54,6 +57,14 @@
       <nav-footer></nav-footer>
     </div>
 </template>
+
+<style scoped>
+  .load-more{
+      height: 100px;
+      line-height: 100px;
+      text-align: center;
+  }
+</style>
 
 <script>
     import "./../assets/css/base.css"
@@ -71,7 +82,6 @@
     export default {
         data(){
           return {
-            msg:"hello dxh",
             data:[],
             priceFilter:[
               {startPrice:0,endPrice:500.00},
@@ -82,7 +92,11 @@
             ],
             priceChecked:"All",   /*默认All选中*/
             overLayFlag:false,    /*遮罩默认不显示*/
-            filterBy:false
+            filterBy:false,
+            page:1,
+            pageSize:4,
+            sortFlat:true,
+            busy:true    /*是否禁用滚动加载 true禁用，false启用*/
           }
         }
         ,components:{
@@ -91,6 +105,17 @@
             NavBread
         }
         ,methods:{
+            loadMore(){
+                this.busy  = true;
+                setTimeout(()=>{
+                    this.page++;
+                    this.goodsList(true);
+                },500);
+            },
+            setSortFlat(){
+                this.sortFlat = ! this.sortFlat;
+                this.goodsList();
+            },
             setFilterPrice(){
                 this.filterBy = true;
                 this.overLayFlag = true;
@@ -98,39 +123,43 @@
             setFilterChecked(index){
                 this.priceChecked=index;
                 this.closePop();
-            }
-            ,
+            },
             closePop(){
                 this.filterBy = false;
                 this.overLayFlag = false;
             }
+            ,goodsList(flag){   /*flag是否累加*/
+                let param = {
+                    page:this.page,
+                    pageSize:this.pageSize,
+                    sort:this.sortFlat?1:-1
+                };
+                axios.get("/goods",{
+                  params:param
+                }).then((res)=>{
+                  let data = res.data;
+                  if(data.status=="0"){
+                      if(flag){
+                          this.data = this.data.concat(data.result.list);
+                          if(data.result.count==0 || data.result.count<this.pageSize){
+                              this.busy = true;
+                          }else{
+                              this.busy = false;
+                          }
+                      }else{
+                          this.data = data.result.list;
+                          this.busy = false;
+                      }
+                  }else{
+                    alert("数据加载错误");
+                  }
+                }).catch((err)=>{
+                  alert("服务端加载失败");
+                })
+            }
         }
         ,mounted(){
-            /*axios.get("").then((res)=>{
-
-            }).catch((err)=>{
-
-            })*/
-            this.data = [
-              {
-                "id":"1",
-                "name":"音响",
-                "price":199,
-                "img":"6.jpg"
-              },
-              {
-                "id":"2",
-                "name":"小米8",
-                "price":2999,
-                "img":"8.jpg"
-              },
-              {
-                "id":"3",
-                "name":"小米5s小米5s",
-                "price":1099,
-                "img":"4.jpg"
-              }
-            ];
+            this.goodsList();
          }
     }
 </script>
