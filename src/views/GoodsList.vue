@@ -72,9 +72,9 @@
     import "./../assets/css/login.css"
 
     //模板
-    import NavHeader from "@/views/NavHeader.vue"
-    import NavFooter from "@/views/NavFooter.vue"
-    import NavBread from "@/views/NavBread.vue"
+    import NavHeader from "@/components/NavHeader.vue"
+    import NavFooter from "@/components/NavFooter.vue"
+    import NavBread from "@/components/NavBread.vue"
 
     //插件
     import axios from "axios"
