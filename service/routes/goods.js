@@ -67,5 +67,80 @@ router.get("/",(req,res,next)=>{
   });
 })
 
+router.post("/addCart",(req,res,next)=>{
+  //获得session用户Id
+  let userId = "1";
+  //获得productId,需要加入的商品
+  let productId = req.body.productId;
+
+  const users = require("../models/Users");
+  //
+  users.findOne({userId:userId},(err,userDoc)=>{
+    if(err){
+      res.json({
+        status:1,
+        msg:err.message
+      })
+    }else{
+      if(userDoc){
+
+        let goodsItem = "";
+        userDoc.cartList.forEach((item)=>{
+          if(item.id==productId){
+            item.num ++;
+            goodsItem = item;
+          }
+        })
+
+        if(goodsItem){
+          userDoc.save((err3)=>{
+            if(err3){
+              res.json({
+                status:1,
+                msg:err3.message
+              });
+            }else{
+              res.json({
+                status:0,
+                msg:"",
+                result:"success"
+              });
+            }
+          })
+        }else{
+          goods.findOne({id:productId},(err1,productDoc)=>{
+            if(err1){
+              res.json({
+                status:1,
+                msg:err1.message
+              });
+            }else{
+              let doc_ = productDoc._doc;
+              doc_.num = 1;
+              doc_.checked = 1;
+              userDoc.cartList.push(doc_);
+              userDoc.save((err2)=>{
+                if(err2){
+                  res.json({
+                    status:1,
+                    msg:err2.message
+                  });
+                }else{
+                  res.json({
+                    status:0,
+                    msg:"",
+                    result:"success"
+                  });
+                }
+              })
+            }
+          })
+        }
+      }
+    }
+  })
+
+})
+
 module.exports = router;
 
