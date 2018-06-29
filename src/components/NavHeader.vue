@@ -18,7 +18,7 @@
               <span class="navbar-link"></span>
               <a href="javascript:void(0)" v-show="nickName!=''" class="navbar-link">{{nickName}}</a>
               <a href="javascript:void(0)" @click="loginModalFlag=true" v-show="nickName==''" class="navbar-link">Login</a>
-              <a href="javascript:void(0)" class="navbar-link" v-show="nickName!=''">Logout</a>
+              <a href="javascript:void(0)" class="navbar-link" v-show="nickName!=''" @click="logout">Logout</a>
               <div class="navbar-cart-container">
                 <span class="navbar-cart-count"></span>
                 <a class="navbar-link navbar-cart-link" href="/#/cart">
@@ -77,7 +77,26 @@
             errorTip:false
           }
         },
+        mounted(){
+          this.checkLogin();
+        },
         methods:{
+          checkLogin(){
+            axios.get('/users/checkLogin').then((response)=>{
+              let res = response.data;
+              if(res.status==0){
+                this.nickName = res.result;
+              }
+            })
+          },
+          logout(){
+            axios.get('/users/logout').then((response)=>{
+              let res = response.data;
+              if(res.status==0){
+                this.nickName = "";
+              }
+            })
+          },
           login(){
             if(!this.userName || !this.userPwd){
               this.errorTip = true;

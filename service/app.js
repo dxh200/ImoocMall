@@ -22,6 +22,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+//在所有请求之前拦截登陆
+app.use((req, res, next)=>{
+  if(req.cookies.userId){  //登陆
+    next();
+  }else{
+    if(req.path=="/users/login" || req.path=="/users/logout" || req.path=="/users/checkLogin" || req.path=="/goods/list"){
+      next();
+    }else{
+      res.json({
+        status:10001,
+        msg:"未登陆",
+        result:""
+      })
+    }
+  }
+})
+
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/goods', goodsRouter);

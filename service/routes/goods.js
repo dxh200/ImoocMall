@@ -17,7 +17,7 @@ mongoose.connection.on("disconnected",()=>{
   console.log('Mongoose connection disconnected 链接断开');
 })
 
-router.get("/",(req,res,next)=>{
+router.get("/list",(req,res,next)=>{
   let sort = req.query.sort;
   let page = parseInt(req.query.page);
   let pageSize = parseInt(req.query.pageSize);
@@ -69,7 +69,7 @@ router.get("/",(req,res,next)=>{
 
 router.post("/addCart",(req,res,next)=>{
   //获得session用户Id
-  let userId = "1";
+  let userId = req.cookies.userId;
   //获得productId,需要加入的商品
   let productId = req.body.productId;
 
