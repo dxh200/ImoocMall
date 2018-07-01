@@ -5,10 +5,13 @@ import App from './App'
 import router from './router'
 import VueLazyLoad from "vue-lazyload"
 import infiniteScroll from 'vue-infinite-scroll'
+import {currency} from './utils/currency'
 
 Vue.use(VueLazyLoad,{
   loading:"/static/loading-svg/loading-spin.svg"
 })
+
+Vue.filter('currency',currency)
 
 Vue.use(infiniteScroll)
 
